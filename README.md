@@ -3,4 +3,4 @@
 > [넘블 제공 가이드라인](https://thoughtful-arch-8c2.notion.site/MYBOX-b00ce9f0e73a4f368a6c23075816b863)
 
 ## API 문서 
-> [GitBook](https://juus-organization.gitbook.io/numble-mybox/)
+> [GitBook](http://localhost:8080/index.html)
