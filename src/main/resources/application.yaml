@@ -1,0 +1,33 @@
+spring:
+  web:
+    resources:
+      static-locations: classpath:/static/
+  devtools:
+    livereload:
+      enabled: true
+  freemarker:
+    cache: false
+  thymeleaf:
+    cache: false
+  datasource:
+    url: jdbc:mysql://localhost:3306/study
+    username: root
+    password: test1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+    properties:
+      hibernate:
+        default_batch_fetch_size: 1000
+    hibernate:
+      ddl-auto: none
+
+
+  servlet:
+    multipart:
+      enabled: true
+      location: /Users/myeongjooseo/dev/file
+      max-file-size: 10MB
+      max-request-size: 30MB

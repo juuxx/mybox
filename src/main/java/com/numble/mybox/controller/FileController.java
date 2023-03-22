@@ -24,8 +24,14 @@ public class FileController {
 
 	private final FileService fileService;
 
+	/**
+	 * file Upload
+	 * @param request
+	 * @return
+	 * @throws IOException
+	 */
 	@PostMapping("/files/multi/upload")
-	public ResponseEntity<HttpStatus> uploadFiles(@RequestBody FileRequest request) throws IOException {
+	public ResponseEntity<HttpStatus> uploadFiles(@ModelAttribute FileRequest request) throws IOException {
 		Long userId = 1L;
 		this.fileService.uploadFiles(userId, request);
 		return ResponseEntity.ok().build();
