@@ -38,7 +38,7 @@ public class FileController {
 	}
 
 	@GetMapping("/files/{fileId}")
-	public ResponseEntity<HttpStatus> uploadFiles(@PathVariable Long fileId, HttpServletResponse response) throws IOException {
+	public ResponseEntity<HttpStatus> downloadFiles(@PathVariable Long fileId, HttpServletResponse response) throws IOException {
 		Long userId = 1L;
 		this.fileService.downloadFile(userId, fileId, response);
 		return ResponseEntity.ok().build();

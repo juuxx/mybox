@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,9 +38,7 @@ public class MyFileUploader implements FileUploader {
 	}
 
 	private Optional<File> convert(MultipartFile file, String extension) throws IOException {
-		String fileId = UUID.randomUUID().toString();
-		File convertFile = new File(Objects.requireNonNull(fileId + "." + extension));
-
+		File convertFile = new File(generateUniqueFileNameWithExtension(extension));
 		if (convertFile.createNewFile()) {
 			try (FileOutputStream fos = new FileOutputStream(convertFile)) {
 				fos.write(file.getBytes());
@@ -50,8 +47,12 @@ public class MyFileUploader implements FileUploader {
 			}
 			return Optional.of(convertFile);
 		}
-
 		return Optional.empty();
+	}
+
+	private String generateUniqueFileNameWithExtension(String extension) {
+		String uniqueFileName = UUID.randomUUID().toString();
+		return uniqueFileName + "." + extension;
 	}
 
 	private FileDto upload(MultipartFile multipartFile, File uploadFile, String folderPath, String extension, String originName) {
