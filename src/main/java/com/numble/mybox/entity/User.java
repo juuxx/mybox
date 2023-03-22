@@ -49,9 +49,7 @@ public class User {
 	@OneToOne(mappedBy = "user")
 	private UserFileUsage userFileUsage;
 
-	public void checkEqualUserOrThrow(Long id) {
-		if (!Objects.equals(this.id, id)) {
-			throw new IllegalArgumentException("작성자와 로그인한 유저가 다릅니다.");
-		}
+	public boolean isCheckUserIdEqual(Long id) {
+		return Objects.equals(this.id, id);
 	}
 }

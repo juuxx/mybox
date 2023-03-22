@@ -1,6 +1,5 @@
 package com.numble.mybox.entity;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 import jakarta.persistence.Column;
@@ -52,7 +51,17 @@ public class UserFileUsage {
 	@Column(name = "remove")
 	private Boolean remove;
 
-	public void updateUsedUsage(long fileSize) {
+	public void plusUsedUsage(long fileSize) {
 		this.usedUsage = this.usedUsage.add(new BigDecimal(fileSize));
+	}
+
+	public void minusUsedUsage(long fileSize) {
+		this.usedUsage = this.usedUsage.subtract(new BigDecimal(fileSize));
+	}
+
+	public boolean isOverUsage(long fileSize) {
+		BigDecimal usedUsage = this.getUsedUsage().add(new BigDecimal(fileSize));
+		int compare = totalUsage.compareTo(usedUsage);
+		return compare < 0;
 	}
 }

@@ -10,6 +10,7 @@ import com.numble.mybox.entity.FileMeta;
 import com.numble.mybox.entity.User;
 import com.numble.mybox.entity.UserFileUsage;
 import com.numble.mybox.repository.FileMetaRepository;
+import com.numble.mybox.repository.UserFileUsageRepository;
 import com.numble.mybox.repository.UserRepository;
 import com.numble.mybox.request.FileUploadRequest;
 
@@ -25,6 +26,7 @@ public class FileServiceImpl implements FileService{
 	private final FileProcessor fileProcessor;
 	private final UserRepository userRepository;
 	private final FileMetaRepository fileMetaRepository;
+	private final UserFileUsageRepository userFileUsageRepository;
 
 	@Override
 	public void uploadFiles(Long userId, FileUploadRequest request) {
@@ -36,7 +38,14 @@ public class FileServiceImpl implements FileService{
 
 				User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("유저없음"));
 				UserFileUsage userFileUsage = user.getUserFileUsage();
-				userFileUsage.updateUsedUsage(fileDto.getFileSize());
+
+				boolean isOverUsage = userFileUsage.isOverUsage(fileDto.getFileSize());
+				if (isOverUsage) {
+					fileProcessor.deleteFile(fileDto.getFilePath());
+					throw new IllegalArgumentException("파일 용량이 꽉 찼습니다.");
+				}
+
+				userFileUsage.plusUsedUsage(fileDto.getFileSize());
 
 				FileMeta fileEntity = FileMeta.builder()
 					.user(user)
@@ -44,6 +53,7 @@ public class FileServiceImpl implements FileService{
 					.fileSaveName(fileDto.getFileSaveName())
 					.fileExt(fileDto.getFileExt())
 					.filePath(fileDto.getFilePath())
+					.fileSize(fileDto.getFileSize())
 					.build();
 
 				fileMetaRepository.save(fileEntity);
@@ -59,13 +69,33 @@ public class FileServiceImpl implements FileService{
 
 		FileMeta fileMeta = fileMetaRepository.findById(fileId).orElseThrow(() -> new IllegalArgumentException("File 없음"));
 		User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User 없음"));
-		user.checkEqualUserOrThrow(fileMeta.getUser().getId());
+
+		if (!user.isCheckUserIdEqual(fileMeta.getUser().getId())) {
+			throw new IllegalArgumentException("작성자와 로그인한 유저가 다릅니다.");
+		}
 
 		fileProcessor.fileDownload(response, fileMeta);
 	}
 
 	@Override
 	public void removeFile(Long userId, Long fileId) {
+
+		FileMeta fileMeta = fileMetaRepository.findById(fileId).orElseThrow(() -> new IllegalArgumentException("File 없음"));
+		User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User 없음"));
+
+		if (!user.isCheckUserIdEqual(fileMeta.getUser().getId())) {
+			throw new IllegalArgumentException("작성자와 로그인한 유저가 다릅니다.");
+		}
+
+		fileProcessor.deleteFile(fileMeta.getFilePath());
+
+		UserFileUsage userFileUsage = user.getUserFileUsage();
+		userFileUsage.minusUsedUsage(fileMeta.getFileSize());
+
+		fileMeta.remove();
+		fileMetaRepository.save(fileMeta);
+
+		userFileUsageRepository.save(userFileUsage);
 
 	}
 }

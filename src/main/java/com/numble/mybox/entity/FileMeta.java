@@ -42,6 +42,9 @@ public class FileMeta {
 	@Column(name = "file_path", nullable = false)
 	private String filePath;
 
+	@Column(name = "file_size")
+	private long fileSize;
+
 	@Column(name = "created_at")
 	@Builder.Default
 	private LocalDateTime createdAt = LocalDateTime.now();
@@ -50,4 +53,7 @@ public class FileMeta {
 	@Builder.Default
 	private Boolean remove = false;
 
+	public void remove() {
+		this.remove = true;
+	}
 }

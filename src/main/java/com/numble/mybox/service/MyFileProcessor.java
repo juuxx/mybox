@@ -74,6 +74,23 @@ public class MyFileProcessor implements FileProcessor {
 
 	}
 
+	@Override
+	public void deleteFile(String filePath) {
+		File file = new File(uploadPath + File.separator + filePath);
+
+		try {
+
+			boolean delete = file.delete();
+
+			if (!delete) {
+				throw new IllegalArgumentException("파일을 삭제하지 못했습니다.");
+			}
+
+		} catch (Exception e) {
+			throw new IllegalArgumentException("파일 삭제 중 오류가 발생하였습니다: " + e.getMessage());
+		}
+	}
+
 	private Optional<String> getExtensionByStringHandling(String filename) {
 		return Optional.ofNullable(filename)
 			.filter(f -> f.contains("."))
