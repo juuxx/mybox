@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class FileRequest {
+public class FileUploadRequest {
 	private List<File> files;
 
 	@Getter

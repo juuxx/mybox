@@ -1,25 +1,34 @@
 package com.numble.mybox.service;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.numble.mybox.dto.FileDto;
+import com.numble.mybox.entity.FileMeta;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class MyFileUploader implements FileUploader {
+public class MyFileProcessor implements FileProcessor {
 
 	@Value("${spring.servlet.multipart.location}")
 	private String uploadPath;
@@ -29,6 +38,40 @@ public class MyFileUploader implements FileUploader {
 		String extension = this.getExtensionByStringHandling(multipartFile.getOriginalFilename()).orElseThrow(() -> new IllegalArgumentException("잘못된 파일입니다."));
 		File uploadFile = this.convert(multipartFile, extension).orElseThrow(() -> new IllegalArgumentException("MultipartFile -> File 변환 실패"));
 		return this.upload(multipartFile, uploadFile, folderPath, extension, multipartFile.getOriginalFilename());
+	}
+
+	@Override
+	public void fileDownload(HttpServletResponse response, FileMeta fileMeta) throws IOException {
+			File file = new File(uploadPath + File.separator + fileMeta.getFilePath());
+
+			// 파일이 존재하지 않으면 404 오류를 반환합니다.
+			if (!file.exists()) {
+				response.setStatus(HttpStatus.NOT_FOUND.value());
+				throw new IllegalArgumentException("파일을 찾을 수 없습니다.");
+			}
+
+			// Content-Type을 지정합니다.
+			response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+
+			// Content-Disposition 헤더를 지정하여 파일 이름을 설정합니다.
+			response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileMeta.getFileOriginName() + "\"");
+
+			// 파일 데이터를 읽어들이기 위한 InputStream을 생성합니다.
+			InputStream inputStream = new BufferedInputStream(new FileInputStream(file));
+
+			// 파일 데이터를 읽어들이고, response에 쓰기 위한 OutputStream을 생성합니다.
+			OutputStream outputStream = response.getOutputStream();
+			byte[] buffer = new byte[1024];
+			int bytesRead;
+			while ((bytesRead = inputStream.read(buffer)) != -1) {
+				outputStream.write(buffer, 0, bytesRead);
+			}
+
+			// 스트림을 닫습니다.
+			outputStream.flush();
+			outputStream.close();
+			inputStream.close();
+
 	}
 
 	private Optional<String> getExtensionByStringHandling(String filename) {

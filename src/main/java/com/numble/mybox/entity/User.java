@@ -2,6 +2,7 @@ package com.numble.mybox.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -47,4 +48,10 @@ public class User {
 
 	@OneToOne(mappedBy = "user")
 	private UserFileUsage userFileUsage;
+
+	public void checkEqualUserOrThrow(Long id) {
+		if (!Objects.equals(this.id, id)) {
+			throw new IllegalArgumentException("작성자와 로그인한 유저가 다릅니다.");
+		}
+	}
 }
