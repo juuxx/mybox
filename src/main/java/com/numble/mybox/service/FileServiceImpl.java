@@ -7,9 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.numble.mybox.dto.FileDto;
 import com.numble.mybox.entity.FileMeta;
+import com.numble.mybox.entity.Folder;
 import com.numble.mybox.entity.User;
 import com.numble.mybox.entity.UserFileUsage;
 import com.numble.mybox.repository.FileMetaRepository;
+import com.numble.mybox.repository.FolderRepository;
 import com.numble.mybox.repository.UserFileUsageRepository;
 import com.numble.mybox.repository.UserRepository;
 import com.numble.mybox.request.FileUploadRequest;
@@ -26,15 +28,17 @@ public class FileServiceImpl implements FileService{
 	private final FileProcessor fileProcessor;
 	private final UserRepository userRepository;
 	private final FileMetaRepository fileMetaRepository;
+	private final FolderRepository folderRepository;
 	private final UserFileUsageRepository userFileUsageRepository;
 
 	@Override
 	public void uploadFiles(Long userId, FileUploadRequest request) {
 
-		for (FileUploadRequest.File file : request.getFiles()) {
+		for (FileUploadRequest.File fileRequest : request.getFiles()) {
 			try {
-
-				FileDto fileDto = fileProcessor.uploadFile(file.getFile(), file.getFolderPath(), userId);
+				Long folderId = getFolderIdOrElseNull(userId, fileRequest);
+				String folderPath = folderRepository.getFolderPath(folderId);
+				FileDto fileDto = fileProcessor.uploadFile(fileRequest.getFile(), folderPath, userId);
 
 				User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("유저없음"));
 				UserFileUsage userFileUsage = user.getUserFileUsage();
@@ -49,6 +53,7 @@ public class FileServiceImpl implements FileService{
 
 				FileMeta fileEntity = FileMeta.builder()
 					.user(user)
+					.folderId(fileRequest.getFolderId())
 					.fileOriginName(fileDto.getFileOriginName())
 					.fileSaveName(fileDto.getFileSaveName())
 					.fileExt(fileDto.getFileExt())
@@ -97,5 +102,14 @@ public class FileServiceImpl implements FileService{
 
 		userFileUsageRepository.save(userFileUsage);
 
+	}
+
+	private Long getFolderIdOrElseNull(Long userId, FileUploadRequest.File fileRequest) {
+		if (fileRequest.getFolderId() != null) {
+			Folder folder = folderRepository.findById(fileRequest.getFolderId()).orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
+			return folder.getId();
+		}
+		Folder folder = folderRepository.findByParent_IdIsNullAndUserId(userId).orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
+		return folder.getId();
 	}
 }

@@ -30,6 +30,9 @@ public class FileMeta {
 	@JoinColumn(name = "user_id")
 	private User user;
 
+	@Column(name = "folder_id")
+	private Long folderId;
+
 	@Column(name = "file_origin_name", nullable = false)
 	private String fileOriginName;
 

@@ -16,6 +16,6 @@ public class FileUploadRequest {
 	@Setter
 	public static class File {
 		private MultipartFile file;
-		private String folderPath;
+		private Long folderId;
 	}
 }
