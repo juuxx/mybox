@@ -2,10 +2,13 @@ spring:
   config:
     activate:
       on-profile: real
-  profiles.include: real-db
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+    profiles:
+      group:
+        local:
+          - real-db
+#  jpa:
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
   session:
     store-type: jdbc
