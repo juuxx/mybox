@@ -1,5 +1,5 @@
 FORMAT: 1A
-HOST: https://localhost:8080
+HOST: http://ec2-43-201-189-36.ap-northeast-2.compute.amazonaws.com:8080
 
 # Numble - 네이버 MYBOX
 
