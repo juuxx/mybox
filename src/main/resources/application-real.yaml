@@ -1,6 +1,8 @@
 spring:
-  profiles:
-    include: real-db
+  config:
+    activate:
+      on-profile: real
+  profiles.include: real-db
   jpa:
     properties:
       hibernate:
